@@ -18,10 +18,12 @@
 package org.dromara.hmily.springcloud.interceptor;
 
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.dromara.hmily.common.bean.context.HmilyTransactionContext;
 import org.dromara.hmily.common.enums.HmilyRoleEnum;
 import org.dromara.hmily.common.utils.LogUtil;
 import org.dromara.hmily.core.concurrent.threadlocal.HmilyTransactionContextLocal;
+import org.dromara.hmily.core.entity.TransactionBase;
 import org.dromara.hmily.core.interceptor.HmilyTransactionInterceptor;
 import org.dromara.hmily.core.service.HmilyTransactionAspectService;
 import org.dromara.hmily.core.mediator.RpcMediator;
@@ -34,6 +36,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Method;
 import java.util.Objects;
 
 
@@ -75,6 +78,19 @@ public class SpringCloudHmilyTransactionInterceptor implements HmilyTransactionI
                 LogUtil.warn(LOGGER, () -> "can not acquire request info:" + ex.getLocalizedMessage());
             }
         }
+        MethodSignature signature = (MethodSignature) pjp.getSignature();
+        Method method = signature.getMethod();
+        if (hmilyTransactionContext != null) {
+            System.out.println(String.format("调用方法：%s,action：%s", method.getName(), hmilyTransactionContext.getAction()));
+            for (Object o : pjp.getArgs()) {
+                if (TransactionBase.class.isAssignableFrom(o.getClass())) {
+                    TransactionBase transactionBase = (TransactionBase) o;
+                    transactionBase.setTransId(hmilyTransactionContext.getTransId());
+                    break;
+                }
+            }
+        }
+
         return hmilyTransactionAspectService.invoke(hmilyTransactionContext, pjp);
     }
 

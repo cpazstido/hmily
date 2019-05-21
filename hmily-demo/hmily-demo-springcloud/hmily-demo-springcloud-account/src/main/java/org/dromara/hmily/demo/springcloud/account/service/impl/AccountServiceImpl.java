@@ -61,7 +61,10 @@ public class AccountServiceImpl implements AccountService {
     @Hmily(confirmMethod = "confirm", cancelMethod = "cancel")
     public boolean payment(final AccountDTO accountDTO) {
         LOGGER.debug("============执行try付款接口===============");
-        accountMapper.update(accountDTO);
+        int count = accountMapper.update(accountDTO);
+        if(count == 0){
+            return false;
+        }
         //内嵌调用
         //inLineService.test();
         return Boolean.TRUE;
@@ -81,6 +84,10 @@ public class AccountServiceImpl implements AccountService {
     public boolean confirm(final AccountDTO accountDTO) {
         LOGGER.debug("============执行confirm 付款接口===============");
         final int rows = accountMapper.confirm(accountDTO);
+        if(rows == 0){
+            LOGGER.debug("============执行confirm 付款接口失败===============");
+            return false;
+        }
         return Boolean.TRUE;
     }
 
@@ -94,8 +101,9 @@ public class AccountServiceImpl implements AccountService {
     public boolean cancel(final AccountDTO accountDTO) {
         LOGGER.debug("============执行cancel 付款接口===============");
         final int rows = accountMapper.cancel(accountDTO);
-        if (rows != 1) {
-            throw new HmilyRuntimeException("取消扣减账户异常！");
+        if (rows == 0) {
+//            throw new HmilyRuntimeException("取消扣减账户异常！");
+            return false;
         }
         return Boolean.TRUE;
     }

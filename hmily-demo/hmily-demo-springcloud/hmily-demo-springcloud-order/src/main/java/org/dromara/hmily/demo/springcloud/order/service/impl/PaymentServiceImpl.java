@@ -133,13 +133,16 @@ public class PaymentServiceImpl implements PaymentService {
 
     public void confirmOrderStatus(Order order) {
         order.setStatus(OrderStatusEnum.PAY_SUCCESS.getCode());
-        orderMapper.update(order);
+        int num = orderMapper.update(order);
+        if (num == 0){
+            LOGGER.info("=========进行订单confirm操作失败================");
+        }
         LOGGER.info("=========进行订单confirm操作完成================");
     }
 
     public void cancelOrderStatus(Order order) {
         order.setStatus(OrderStatusEnum.PAY_FAIL.getCode());
-        orderMapper.update(order);
+        int rows = orderMapper.update(order);
         LOGGER.info("=========进行订单cancel操作完成================");
     }
 

@@ -17,7 +17,16 @@
 
 package org.dromara.hmily.common.utils;
 
+import com.sun.jmx.snmp.tasks.ThreadService;
+
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * snow flow .
@@ -134,4 +143,30 @@ public final class IdWorkerUtils {
         return String.valueOf(ID_WORKER_UTILS.nextId());
     }
 
+    public static void main(String[] args) throws Exception {
+        int taskNums = 500;
+        ExecutorService pool = Executors.newFixedThreadPool(taskNums);
+        Set set = Collections.synchronizedSet(new HashSet());
+        CountDownLatch countDownLatch = new CountDownLatch(taskNums);
+        for(int i=0;i<taskNums;i++){
+            pool.submit(new Runnable() {
+                @Override
+                public void run() {
+                    long id = 0;
+                    try {
+                        id = IdWorkerUtils.getInstance().nextId();
+                        set.add(id);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        countDownLatch.countDown();
+                    }
+//                    System.out.println(id);
+                }
+            });
+        }
+        pool.shutdown();
+        countDownLatch.await();
+        System.out.println("========="+set.size()+"=========");
+    }
 }

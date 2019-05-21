@@ -135,7 +135,7 @@ public class HmilyTransactionExecutor {
     public Object confirm(final HmilyTransaction currentTransaction) throws HmilyRuntimeException {
         LogUtil.debug(LOGGER, () -> "hmily transaction confirm .......！start");
         if (Objects.isNull(currentTransaction) || CollectionUtils.isEmpty(currentTransaction.getHmilyParticipants())) {
-            return null;
+            return true;
         }
         currentTransaction.setStatus(HmilyActionEnum.CONFIRMING.getCode());
         updateStatus(currentTransaction);
@@ -195,16 +195,26 @@ public class HmilyTransactionExecutor {
                             HmilyActionEnum.CANCELING,
                             hmilyParticipant.getCancelHmilyInvocation());
                     results.add(result);
+                    if (Boolean.class.isAssignableFrom(result.getClass())) {
+                        boolean re = (Boolean) result;
+                        if (!re) {
+                            throw new Exception("调用cancel方法失败？！？");
+                        }else {
+                            success &= true;
+                        }
+                    }else {
+                        success &= false;
+                    }
                 } catch (Exception e) {
                     LogUtil.error(LOGGER, "execute cancel ex:{}", () -> e);
-                    success = false;
+                    success &= false;
                     failList.add(hmilyParticipant);
                 } finally {
                     HmilyTransactionContextLocal.getInstance().remove();
                 }
             }
             executeHandler(success, currentTransaction, failList);
-            return results.get(0);
+            return success;
         }
         return null;
     }

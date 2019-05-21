@@ -60,7 +60,10 @@ public class InventoryServiceImpl implements InventoryService {
     @Hmily(confirmMethod = "confirmMethod", cancelMethod = "cancelMethod")
     public Boolean decrease(InventoryDTO inventoryDTO) {
         LOGGER.info("==========springcloud调用扣减库存decrease===========");
-        inventoryMapper.decrease(inventoryDTO);
+        int count = inventoryMapper.decrease(inventoryDTO);
+        if(count == 0){
+            return false;
+        }
         return true;
     }
 
@@ -129,12 +132,19 @@ public class InventoryServiceImpl implements InventoryService {
     public Boolean confirmMethod(InventoryDTO inventoryDTO) {
         LOGGER.info("==========Springcloud调用扣减库存确认方法===========");
         final int rows = inventoryMapper.confirm(inventoryDTO);
+        if (rows == 0) {
+            LOGGER.info("==========Springcloud调用扣减库存确认方法失败===========");
+            return false;
+        }
         return true;
     }
 
     public Boolean cancelMethod(InventoryDTO inventoryDTO) {
         LOGGER.info("==========Springcloud调用扣减库存取消方法===========");
         int rows = inventoryMapper.cancel(inventoryDTO);
+        if(rows == 0){
+            return false;
+        }
         return true;
     }
 

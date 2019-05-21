@@ -25,6 +25,7 @@ import org.dromara.hmily.common.enums.HmilyActionEnum;
 import org.dromara.hmily.common.utils.DefaultValueUtils;
 import org.dromara.hmily.core.cache.HmilyTransactionGuavaCacheManager;
 import org.dromara.hmily.core.concurrent.threadlocal.HmilyTransactionContextLocal;
+import org.dromara.hmily.core.coordinator.HmilyCoordinatorService;
 import org.dromara.hmily.core.service.HmilyTransactionHandler;
 import org.dromara.hmily.core.service.executor.HmilyTransactionExecutor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,9 @@ import java.lang.reflect.Method;
  */
 @Component
 public class ParticipantHmilyTransactionHandler implements HmilyTransactionHandler {
+
+    @Autowired
+    private HmilyCoordinatorService hmilyCoordinatorService;
 
     private final HmilyTransactionExecutor hmilyTransactionExecutor;
 
@@ -59,12 +63,17 @@ public class ParticipantHmilyTransactionHandler implements HmilyTransactionHandl
         switch (HmilyActionEnum.acquireByCode(context.getAction())) {
             case TRYING:
                 try {
-                    hmilyTransaction = hmilyTransactionExecutor.preTryParticipant(context, point);
-                    final Object proceed = point.proceed();
-                    hmilyTransaction.setStatus(HmilyActionEnum.TRYING.getCode());
-                    //update log status to try
-                    hmilyTransactionExecutor.updateStatus(hmilyTransaction);
-                    return proceed;
+                    hmilyTransaction = hmilyCoordinatorService.findByTransId(context.getTransId());
+                    if (hmilyTransaction != null) {
+                        return true;
+                    } else {
+                        hmilyTransaction = hmilyTransactionExecutor.preTryParticipant(context, point);
+                        final Object proceed = point.proceed();
+                        hmilyTransaction.setStatus(HmilyActionEnum.TRYING.getCode());
+                        //update log status to try
+                        hmilyTransactionExecutor.updateStatus(hmilyTransaction);
+                        return proceed;
+                    }
                 } catch (Throwable throwable) {
                     //if exception ,delete log.
                     hmilyTransactionExecutor.deleteTransaction(hmilyTransaction);

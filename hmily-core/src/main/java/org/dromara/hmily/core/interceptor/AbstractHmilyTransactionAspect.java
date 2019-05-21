@@ -18,10 +18,14 @@
 package org.dromara.hmily.core.interceptor;
 
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.dromara.hmily.annotation.Hmily;
+
+import java.lang.reflect.Method;
 
 /**
  * this is {@linkplain Hmily} aspect handler.
@@ -30,6 +34,7 @@ import org.dromara.hmily.annotation.Hmily;
  */
 @Aspect
 public abstract class AbstractHmilyTransactionAspect {
+    private static int counter = 0;
 
     private HmilyTransactionInterceptor hmilyTransactionInterceptor;
 
@@ -58,6 +63,7 @@ public abstract class AbstractHmilyTransactionAspect {
      */
     @Around("hmilyInterceptor()")
     public Object interceptTccMethod(final ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+//        Thread.sleep(1000);
         return hmilyTransactionInterceptor.interceptor(proceedingJoinPoint);
     }
 

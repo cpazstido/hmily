@@ -18,6 +18,7 @@
 package org.dromara.hmily.demo.springcloud.inventory.dto;
 
 import lombok.Data;
+import org.dromara.hmily.core.entity.TransactionBase;
 
 import java.io.Serializable;
 

@@ -267,7 +267,7 @@ public class HmilyAdminConfiguration {
             MongoClientFactoryBean clientFactoryBean = new MongoClientFactoryBean();
             final String userName = env.getProperty("compensation.mongo.userName", "xiaoyu");
             final String dbName = env.getProperty("compensation.mongo.dbName", "col");
-            final String password = env.getProperty("compensation.mongo.password", "123456");
+            final String password = env.getProperty("compensation.mongo.password", "root");
             final String url = env.getProperty("compensation.mongo.url", "127.0.0.1");
             MongoCredential credential = MongoCredential.createScramSha1Credential(
                     userName,
